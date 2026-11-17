@@ -5,41 +5,33 @@ spec, a task DAG, design artifacts (architecture + ADRs, OpenAPI contract, SQL s
 patch, unit/integration/regression tests, documentation, a risk register, a validation report and a final
 engineering summary. Agents run independently across many steps, and humans approve at three gates.
 
-| Deliverable | Where |
-|---|---|
-| Working prototype | `agentic_sdlc/` (`python -m agentic_sdlc ...`) |
-| Architecture overview | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
-| Example scenarios (greenfield / brownfield / ambiguous) | [`docs/SCENARIOS.md`](docs/SCENARIOS.md) + committed outputs in `sample_runs/` |
-| Setup instructions | this file |
-| Testing approach and limitations | [`docs/TESTING.md`](docs/TESTING.md) |
-| Mandatory URL shortener use case | `sample_runs/01_greenfield_url_shortener/` |
+
 
 ## Setup
 
 Requires Python 3.10+ (tested on 3.13) and `git` (used only for the patch-apply check).
 
-```bash
 cd agentic-sdlc
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m pytest tests -q                       # 39 tests of the agentic system
-```
 
-PowerShell (Windows):
 
-```powershell
+ (Windows):
+
+
 cd agentic-sdlc
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python -m pytest tests -q
-```
+
 
 No API key is needed. The default `offline` provider is deterministic. `--llm anthropic` (with
 `pip install anthropic` and `ANTHROPIC_API_KEY` set) adds LLM augmentation behind the same guardrails.
 
 ## Run it
 
-```bash
+
 # every mandated scenario + recovery demos, with a results table at the end
 python -m agentic_sdlc demo --out runs
 
@@ -61,9 +53,8 @@ python -m agentic_sdlc run -f examples/requirements/ambiguous.txt --auto-approve
 # show error handling and recovery
 python -m agentic_sdlc run -f examples/requirements/greenfield_url_shortener.txt --auto-approve \
     --inject-fault transient:impl_analytics --inject-fault defect:impl_core --name recovery
-```
 
-PowerShell: use the same commands on one line, or replace the trailing `\` with a backtick `` ` ``.
+
 
 ### What a run produces (`runs/<name>/`)
 
@@ -77,24 +68,24 @@ PowerShell: use the same commands on one line, or replace the trailing `\` with 
 
 ### Try the generated service
 
-```bash
+
 cd runs/greenfield/deliverable/service
 pip install -r requirements.txt && python -m pytest -q
 SHORTENER_API_KEYS=dev-key-123 uvicorn app.main:app --port 8000
 curl -s -X POST localhost:8000/api/v1/links -H 'X-API-Key: dev-key-123' \
      -H 'Content-Type: application/json' -d '{"url":"https://example.com"}'
-```
 
-```powershell
+
+
 cd runs\greenfield\deliverable\service
 $env:SHORTENER_API_KEYS = "dev-key-123"; uvicorn app.main:app --port 8000
 Invoke-RestMethod -Method Post http://localhost:8000/api/v1/links -Headers @{"X-API-Key"="dev-key-123"} `
   -ContentType "application/json" -Body '{"url":"https://example.com"}'
-```
+
 
 ## Repository layout
 
-```
+
 agentic_sdlc/
   pipeline.py        stages, gates, repair loop, promotion
   orchestrator.py    DAG engine: waves, retries, skip propagation, rework, checkpoints
@@ -109,4 +100,4 @@ examples/            requirement texts, answers file, legacy_shortener (brownfie
 sample_runs/         committed outputs of `demo`
 tests/               tests of the agentic system
 docs/                ARCHITECTURE, SCENARIOS, TESTING
-```
+
